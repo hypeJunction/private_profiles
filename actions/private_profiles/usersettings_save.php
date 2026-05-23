@@ -13,15 +13,12 @@ if (($user->guid != $current_user->guid) && !$current_user->isAdmin()) {
 
 $params = (array) get_input('params');
 
-$plugin = elgg_get_plugin_from_id('private_profiles');
-$plugin_name = $plugin->getManifest()->getName();
-
 $plugin_name = $plugin->getDisplayName();
 
 $result = false;
 
 foreach ($params as $k => $v) {
-	$result = $plugin->setUserSetting($k, $v, $user->guid);
+	$result = $user->setPluginSetting('private_profiles', $k, $v);
 	if (!$result) {
 		return elgg_error_response(elgg_echo('plugins:usersettings:save:fail', [$plugin_name]));
 	}

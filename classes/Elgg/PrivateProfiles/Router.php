@@ -21,14 +21,14 @@ class Router {
 
 		if (!$user) {
 			register_error(elgg_echo('private_profiles:invalid_username'));
-			forward(REFERER);
-			return false;
+			header('Location: ' . elgg_normalize_url(REFERER), true, 302);
+			exit;
 		}
 
 		if (!Access::hasAccessToProfile($user)) {
 			register_error(elgg_echo('private_profiles:access_denied'));
-			forward(REFERER);
-			return false;
+			header('Location: ' . elgg_normalize_url(REFERER), true, 302);
+			exit;
 		}
 	}
 

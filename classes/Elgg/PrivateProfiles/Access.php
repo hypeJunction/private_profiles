@@ -181,14 +181,9 @@ class Access {
 		}
 
 		if ($error) {
-			register_error(elgg_echo('private_profiles:sending_denied'));
-
-			// forward to referrer or else action code sends to front page
-			forward(REFERER);
-
-			return false;
+			throw new \Elgg\Exceptions\Http\ValidationException(elgg_echo('private_profiles:sending_denied'));
 		}
-		
+
 		return;
 	}
 

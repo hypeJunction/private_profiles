@@ -10,7 +10,8 @@ if ($username) {
 }
 
 if (!$user || !$user->canEdit()) {
-	forward('settings/user');
+	header('Location: ' . elgg_normalize_url('settings/user'), true, 302);
+	exit;
 }
 
 elgg_set_context('settings');
