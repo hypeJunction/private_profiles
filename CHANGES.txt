@@ -1,6 +1,19 @@
 Changelog
 =========
 
+4.0.0
+-----
+
+- Updated for Elgg 4.x.
+- Removed manifest.xml (Elgg 4.x metadata now in composer.json only).
+- Replaced removed forward() calls with header()+exit (in route hooks/resource views)
+  and \Elgg\Exceptions\Http\ValidationException (in action:validate hook).
+- Replaced ElggPlugin::setUserSetting() with ElggUser::setPluginSetting().
+- Dropped manifest lookup ($plugin->getManifest()->getName()); use getDisplayName().
+- Composer constraints: elgg/elgg ^4.0, php >=7.4, composer/installers ^2.0.
+- Vendor changed to hypejunction/private_profiles (forked maintenance lineage).
+- Added Elgg coding-standard docblocks for all hook handlers and public methods.
+
 3.0.0
 -----
 
