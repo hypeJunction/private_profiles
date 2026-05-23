@@ -2,11 +2,17 @@
 
 namespace Elgg\PrivateProfiles;
 
+/**
+ * Routing hooks for Private Profiles plugin
+ */
 class Router {
 
 	/**
 	 * Route /profile pages
 	 *
+	 * @param \Elgg\Hook $hook "route:rewrite","profile" hook
+	 *
+	 * @return void
 	 */
 	public static function routeProfile(\Elgg\Hook $hook) {
 		$return = $hook->getValue();
@@ -35,6 +41,9 @@ class Router {
 	/**
 	 * Route /settings/privacy pages
 	 *
+	 * @param \Elgg\Hook $hook "route:rewrite","settings" hook
+	 *
+	 * @return array|null
 	 */
 	public static function rewriteSettingsRoute(\Elgg\Hook $hook) {
 		$return = $hook->getValue();
@@ -76,5 +85,4 @@ class Router {
 		
 		return true;
 	}
-
 }

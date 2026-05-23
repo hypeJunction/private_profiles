@@ -15,7 +15,6 @@ $default_access_setting = elgg_get_plugin_setting('default_access_setting', 'pri
 $default_messages_setting = elgg_get_plugin_setting('default_messages_setting', 'private_profiles');
 
 if ($custom_access_setting == 'no') {
-
 	$access_setting_info = elgg_echo('private_profiles:no_custom_access_setting') . ' ';
 	$access_setting_info .= elgg_echo("private_profiles:default_access_setting:current_{$default_access_setting}");
 

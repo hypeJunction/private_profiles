@@ -4,9 +4,11 @@ $plugin = elgg_get_plugin_from_id('private_profiles');
 
 $current_user = elgg_get_logged_in_user_entity();
 $guid = (int) get_input('guid', 0);
-if (!$plugin || !$guid || !($user = get_entity($guid))) {
+$user = $guid ? get_entity($guid) : null;
+if (!$plugin || !$user) {
 	return elgg_error_response(elgg_echo('plugins:usersettings:save:fail', ['private_profiles']));
 }
+
 if (($user->guid != $current_user->guid) && !$current_user->isAdmin()) {
 	return elgg_error_response(elgg_echo('plugins:usersettings:save:fail', ['private_profiles']));
 }

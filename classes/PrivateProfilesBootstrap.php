@@ -2,7 +2,7 @@
 
 /**
  * Private Profiles plugin
- * 
+ *
  * @package private_profiles
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
  * @author iionly
@@ -15,13 +15,22 @@ use Elgg\PrivateProfiles\Access;
 use Elgg\PrivateProfiles\Menus;
 use Elgg\PrivateProfiles\Router;
 
+/**
+ * Bootstrap class for Private Profiles plugin
+ */
 class PrivateProfilesBootstrap extends DefaultPluginBootstrap {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function boot() {
 		elgg_register_plugin_hook_handler('route:rewrite', 'settings', [Router::class, 'rewriteSettingsRoute']);
 		elgg_register_plugin_hook_handler('route:rewrite', 'profile', [Router::class, 'routeProfile'], 100);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function init() {
 		elgg_register_plugin_hook_handler('register', 'menu:page', [Menus::class, 'setupPageMenu']);
 

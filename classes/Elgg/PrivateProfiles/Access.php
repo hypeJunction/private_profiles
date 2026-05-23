@@ -4,6 +4,9 @@ namespace Elgg\PrivateProfiles;
 
 use ElggUser;
 
+/**
+ * Access control helpers for Private Profiles plugin
+ */
 class Access {
 
 	const ACCESS_PUBLIC = 'yes';
@@ -14,7 +17,7 @@ class Access {
 	/**
 	 * As elgg_check_access_overrides() was removed in Elgg 3
 	 * we re-implement it here
-	 * 
+	 *
 	 * @param int $user_guid The user to check against.
 	 * @return bool
 	 */
@@ -32,8 +35,10 @@ class Access {
 	/**
 	 * Check if the viewer has permissions to access user profile
 	 *
-	 * @param ElggUser $user   Profile owner
-	 * @param ElggUser $viewer Viewer (default to logged in user)
+	 * @param ElggUser      $user   Profile owner
+	 * @param ElggUser|null $viewer Viewer (default to logged in user)
+	 *
+	 * @return bool
 	 */
 	public static function hasAccessToProfile(ElggUser $user, ElggUser $viewer = null) {
 		if (!isset($viewer)) {
@@ -51,17 +56,17 @@ class Access {
 		$access_setting = self::getAccessSetting($user);
 
 		switch ($access_setting) {
-			case self::ACCESS_PRIVATE :
-			default :
+			case self::ACCESS_PRIVATE:
+			default:
 				return $user->guid == $viewer->guid;
 
-			case self::ACCESS_PUBLIC :
+			case self::ACCESS_PUBLIC:
 				return true;
 
-			case self::ACCESS_LOGGED_IN :
+			case self::ACCESS_LOGGED_IN:
 				return ($viewer);
 
-			case self::ACCESS_FRIENDS :
+			case self::ACCESS_FRIENDS:
 				return $viewer && $viewer->isFriendOf($user->guid);
 		}
 	}
@@ -93,8 +98,10 @@ class Access {
 	/**
 	 * Check if the sender is allowed to send a private message to the recipient
 	 *
-	 * @param ElggUser $recipient Recipient
-	 * @param ElggUser $sender    Sender (default to logged in user)
+	 * @param ElggUser      $recipient Recipient
+	 * @param ElggUser|null $sender    Sender (default to logged in user)
+	 *
+	 * @return bool
 	 */
 	public static function canSendPrivateMessage(ElggUser $recipient, ElggUser $sender = null) {
 		if (!isset($sender)) {
@@ -117,15 +124,15 @@ class Access {
 		$messages_setting = self::getMessagesSetting($recipient);
 
 		switch ($messages_setting) {
-			case self::ACCESS_PRIVATE :
-			default :
+			case self::ACCESS_PRIVATE:
+			default:
 				return $recipient->guid == $sender->guid;
 
-			case self::ACCESS_PUBLIC :
-			case self::ACCESS_LOGGED_IN :
+			case self::ACCESS_PUBLIC:
+			case self::ACCESS_LOGGED_IN:
 				return ($sender);
 
-			case self::ACCESS_FRIENDS :
+			case self::ACCESS_FRIENDS:
 				return $sender && $sender->isFriendOf($recipient->guid);
 		}
 	}
@@ -157,6 +164,10 @@ class Access {
 	/**
 	 * Intercept a message being sent to a user without sufficient permissions
 	 *
+	 * @param \Elgg\Hook $hook "action:validate","messages/send" hook
+	 *
+	 * @return void
+	 * @throws \Elgg\Exceptions\Http\ValidationException
 	 */
 	public static function interceptPrivateMessage(\Elgg\Hook $hook) {
 
@@ -174,6 +185,7 @@ class Access {
 			if (!$recipient) {
 				continue;
 			}
+
 			if (!self::canSendPrivateMessage($recipient)) {
 				$error = true;
 				break;
@@ -190,7 +202,9 @@ class Access {
 	/**
 	 * Hide user activity and membership listing according to settings
 	 *
-	 * @return array
+	 * @param \Elgg\Hook $hook "get_sql","access" hook
+	 *
+	 * @return array|null
 	 */
 	public static function applyActivityPrivacy(\Elgg\Hook $hook) {
 
@@ -223,5 +237,4 @@ class Access {
 
 		return $return;
 	}
-
 }

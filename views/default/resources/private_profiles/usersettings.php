@@ -27,11 +27,11 @@ $content = elgg_view_form('private_profiles/usersettings_save', [], [
 	'user' => $user,
 ]);
 
-$params = array(
+$params = [
 	'content' => $content,
 	'title' => $title,
 	'filter' => '',
-);
+];
 
 $layout = elgg_view_layout('default', $params);
 
