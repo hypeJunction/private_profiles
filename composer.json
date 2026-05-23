@@ -1,24 +1,41 @@
 {
-    "name": "iionly/private_profiles",
+    "name": "hypejunction/private_profiles",
     "description": "Configure access to profile pages and permission to send private messages (site-wide configuration or optionally configurable by each user separately) and users can choose to hide their public activity and membership listing from logged out users (this user setting is hidden on walled garden Elgg sites as it's not necessary anyway).",
     "type": "elgg-plugin",
     "keywords": [
         "elgg",
         "plugin"
     ],
-    "homepage": "https://github.com/iionly/private_profiles",
+    "homepage": "https://github.com/hypeJunction/private_profiles",
     "license": "GPL-2.0-only",
     "authors": [
         {
             "name": "iionly",
             "homepage": "https://github.com/iionly",
             "role": "Developer"
+        },
+        {
+            "name": "Ismayil Khayredinov",
+            "homepage": "https://github.com/hypeJunction",
+            "role": "Developer"
         }
     ],
     "support": {
-            "issues": "https://github.com/iionly/private_profiles/issues"
+        "issues": "https://github.com/hypeJunction/private_profiles/issues"
     },
     "require": {
-        "composer/installers": ">=1.0.8"
+        "php": ">=7.4",
+        "elgg/elgg": "^4.0",
+        "composer/installers": "^2.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
+    },
+    "extra": {
+        "elgg-plugin": {
+            "id": "private_profiles"
+        }
     }
 }
