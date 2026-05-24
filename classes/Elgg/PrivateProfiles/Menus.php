@@ -12,11 +12,11 @@ class Menus {
 	/**
 	 * Setup page menu
 	 *
-	 * @param \Elgg\Hook $hook "register","menu:page" hook
+	 * @param \Elgg\Event $event "register","menu:page" event
 	 *
 	 * @return \Elgg\Menu\MenuItems|array|null
 	 */
-	public static function setupPageMenu(\Elgg\Hook $hook) {
+	public static function setupPageMenu(\Elgg\Event $event) {
 		if (!elgg_in_context('settings')) {
 			return;
 		}
@@ -26,7 +26,7 @@ class Menus {
 			return;
 		}
 
-		$menu = $hook->getValue();
+		$menu = $event->getValue();
 		$menu[] = ElggMenuItem::factory([
 			'name' => 'private_profiles_usersettings',
 			'text' => elgg_echo('private_profiles:usersettings'),

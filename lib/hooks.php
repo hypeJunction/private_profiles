@@ -3,13 +3,13 @@
 /**
  * Setup user hover menu / profile page title menu
  *
- * @param \Elgg\Hook $hook "register","menu:user_hover" or "register","menu:title" hook
+ * @param \Elgg\Event $event "register","menu:user_hover" or "register","menu:title" event
  *
  * @return \Elgg\Menu\MenuItems|null
  */
-function setupUserHoverMenu(\Elgg\Hook $hook) {
+function setupUserHoverMenu(\Elgg\Event $event) {
 
-	$user = $hook->getEntityParam();
+	$user = $event->getEntityParam();
 	if (!elgg_is_logged_in() || !$user instanceof ElggUser) {
 		return;
 	}
@@ -18,7 +18,7 @@ function setupUserHoverMenu(\Elgg\Hook $hook) {
 		return;
 	}
 
-	$menu = $hook->getValue();
+	$menu = $event->getValue();
 	if (!\Elgg\PrivateProfiles\Access::canSendPrivateMessage($user)) {
 		// Remove send message item if viewer is not allowed
 		// to send messages to the user

@@ -24,22 +24,22 @@ class PrivateProfilesBootstrap extends DefaultPluginBootstrap {
 	 * {@inheritDoc}
 	 */
 	public function boot() {
-		elgg_register_plugin_hook_handler('route:rewrite', 'settings', [Router::class, 'rewriteSettingsRoute']);
-		elgg_register_plugin_hook_handler('route:rewrite', 'profile', [Router::class, 'routeProfile'], 100);
+		elgg_register_event_handler('route:rewrite', 'settings', [Router::class, 'rewriteSettingsRoute']);
+		elgg_register_event_handler('route:rewrite', 'profile', [Router::class, 'routeProfile'], 100);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public function init() {
-		elgg_register_plugin_hook_handler('register', 'menu:page', [Menus::class, 'setupPageMenu']);
+		elgg_register_event_handler('register', 'menu:page', [Menus::class, 'setupPageMenu']);
 
 		// Messages
-		elgg_register_plugin_hook_handler('register', 'menu:user_hover', 'setupUserHoverMenu', 501);
-		elgg_register_plugin_hook_handler('register', 'menu:title', 'setupUserHoverMenu', 501);
-		elgg_register_plugin_hook_handler('action:validate', 'messages/send', [Access::class, 'interceptPrivateMessage']);
+		elgg_register_event_handler('register', 'menu:user_hover', 'setupUserHoverMenu', 501);
+		elgg_register_event_handler('register', 'menu:title', 'setupUserHoverMenu', 501);
+		elgg_register_event_handler('action:validate', 'messages/send', [Access::class, 'interceptPrivateMessage']);
 
 		// Public activity/members page
-		elgg_register_plugin_hook_handler('get_sql', 'access', [Access::class, 'applyActivityPrivacy']);
+		elgg_register_event_handler('get_sql', 'access', [Access::class, 'applyActivityPrivacy']);
 	}
 }

@@ -5,7 +5,7 @@ $plugin = elgg_get_plugin_from_id('private_profiles');
 $current_user = elgg_get_logged_in_user_entity();
 $guid = (int) get_input('guid', 0);
 $user = $guid ? get_entity($guid) : null;
-if (!$plugin || !$user) {
+if (!$plugin || !$user || !$current_user) {
 	return elgg_error_response(elgg_echo('plugins:usersettings:save:fail', ['private_profiles']));
 }
 

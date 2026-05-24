@@ -25,8 +25,8 @@ class Access {
 		if (!$user_guid || $user_guid <= 0) {
 			$is_admin = false;
 		} else {
-			$user = get_user($user_guid);
-			$is_admin = $user->isAdmin();
+			$user = get_user((int) $user_guid);
+			$is_admin = $user ? $user->isAdmin() : false;
 		}
 
 		return ($is_admin || elgg_get_ignore_access());
@@ -40,31 +40,33 @@ class Access {
 	 *
 	 * @return bool
 	 */
-	public static function hasAccessToProfile(ElggUser $user, ElggUser $viewer = null) {
+	public static function hasAccessToProfile(ElggUser $user, ?ElggUser $viewer = null) {
 		if (!isset($viewer)) {
 			$viewer = elgg_get_logged_in_user_entity();
 		}
 
-		if (self::privateprofiles_check_access_overrides($viewer->guid)) {
+		$viewer_guid = $viewer ? (int) $viewer->guid : 0;
+
+		if (self::privateprofiles_check_access_overrides($viewer_guid)) {
 			return true;
 		}
 
-		if ($user->canEdit($viewer->guid)) {
+		if ($viewer && $user->canEdit($viewer_guid)) {
 			return true;
 		}
-		
+
 		$access_setting = self::getAccessSetting($user);
 
 		switch ($access_setting) {
 			case self::ACCESS_PRIVATE:
 			default:
-				return $user->guid == $viewer->guid;
+				return $viewer && $user->guid == $viewer->guid;
 
 			case self::ACCESS_PUBLIC:
 				return true;
 
 			case self::ACCESS_LOGGED_IN:
-				return ($viewer);
+				return (bool) $viewer;
 
 			case self::ACCESS_FRIENDS:
 				return $viewer && $viewer->isFriendOf($user->guid);
@@ -103,7 +105,7 @@ class Access {
 	 *
 	 * @return bool
 	 */
-	public static function canSendPrivateMessage(ElggUser $recipient, ElggUser $sender = null) {
+	public static function canSendPrivateMessage(ElggUser $recipient, ?ElggUser $sender = null) {
 		if (!isset($sender)) {
 			$sender = elgg_get_logged_in_user_entity();
 		}
@@ -164,12 +166,12 @@ class Access {
 	/**
 	 * Intercept a message being sent to a user without sufficient permissions
 	 *
-	 * @param \Elgg\Hook $hook "action:validate","messages/send" hook
+	 * @param \Elgg\Event $event "action:validate","messages/send" event
 	 *
 	 * @return void
 	 * @throws \Elgg\Exceptions\Http\ValidationException
 	 */
-	public static function interceptPrivateMessage(\Elgg\Hook $hook) {
+	public static function interceptPrivateMessage(\Elgg\Event $event) {
 
 		$recipients = get_input('recipients');
 		$original_msg_guid = (int) get_input('original_guid');
@@ -179,9 +181,13 @@ class Access {
 			return;
 		}
 
+		if (!is_array($recipients)) {
+			return;
+		}
+
 		$error = false;
 		foreach ($recipients as $guid) {
-			$recipient = get_user($guid);
+			$recipient = get_user((int) $guid);
 			if (!$recipient) {
 				continue;
 			}
@@ -202,34 +208,34 @@ class Access {
 	/**
 	 * Hide user activity and membership listing according to settings
 	 *
-	 * @param \Elgg\Hook $hook "get_sql","access" hook
+	 * @param \Elgg\Event $event "get_sql","access" event
 	 *
 	 * @return array|null
 	 */
-	public static function applyActivityPrivacy(\Elgg\Hook $hook) {
+	public static function applyActivityPrivacy(\Elgg\Event $event) {
 
 		if (elgg_in_context('action')) {
 			// let actions such as /login run without hinderance
 			return;
 		}
 
-		$user_guid = $hook->getParam('user_guid');
+		$user_guid = $event->getParam('user_guid');
 		if ($user_guid) {
 			// activity privacy setting only applies to logged out users
 			return;
 		}
 
-		if ($hook->getParam('ignore_access')) {
+		if ($event->getParam('ignore_access')) {
 			return;
 		}
 
 		$dbprefix = elgg_get_config('dbprefix');
-		$table_alias = $hook->getParam('table_alias') ? $hook->getParam('table_alias') . '.' : '';
+		$table_alias = $event->getParam('table_alias') ? $event->getParam('table_alias') . '.' : '';
 
-		$guid_column = $hook->getParam('guid_column', 'guid');
-		$owner_guid_column = $hook->getParam('owner_guid_column', 'owner_guid');
-		
-		$return = $hook->getValue();
+		$guid_column = $event->getParam('guid_column', 'guid');
+		$owner_guid_column = $event->getParam('owner_guid_column', 'owner_guid');
+
+		$return = $event->getValue();
 
 		// Exclude entities owned by users who have chosen to keep their activity to members only
 		$value = self::ACCESS_LOGGED_IN;
