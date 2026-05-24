@@ -2,6 +2,7 @@
 
 namespace Elgg\PrivateProfiles;
 
+use Elgg\Database\QueryBuilder;
 use ElggUser;
 
 /**
@@ -208,6 +209,12 @@ class Access {
 	/**
 	 * Hide user activity and membership listing according to settings
 	 *
+	 * Excludes entities whose owner (or, for user entities, the entity itself) has
+	 * set the per-user activity setting to "members-only". The exclusion is
+	 * expressed as a parameterized `NOT EXISTS` subquery built via Elgg's
+	 * QueryBuilder rather than raw SQL — see ARCHITECTURE.md migration notes for
+	 * the 5.x → 6.x rewrite.
+	 *
 	 * @param \Elgg\Event $event "get_sql","access" event
 	 *
 	 * @return array|null
@@ -229,18 +236,75 @@ class Access {
 			return;
 		}
 
-		$dbprefix = elgg_get_config('dbprefix');
-		$table_alias = $event->getParam('table_alias') ? $event->getParam('table_alias') . '.' : '';
+		$qb = $event->getParam('query_builder');
+		if (!$qb instanceof QueryBuilder) {
+			// Defensive: pre-6.x event payloads did not include the QueryBuilder.
+			// In that case there is no safe way to inject a parameterized clause —
+			// skip rather than fall back to string interpolation.
+			return;
+		}
 
+		$table_alias = $event->getParam('table_alias');
 		$guid_column = $event->getParam('guid_column', 'guid');
 		$owner_guid_column = $event->getParam('owner_guid_column', 'owner_guid');
 
-		$return = $event->getValue();
+		$qualified_guid = $table_alias ? "{$table_alias}.{$guid_column}" : $guid_column;
+		$qualified_owner_guid = $table_alias ? "{$table_alias}.{$owner_guid_column}" : $owner_guid_column;
 
-		// Exclude entities owned by users who have chosen to keep their activity to members only
-		$value = self::ACCESS_LOGGED_IN;
-		$return['ands'][] = "NOT EXISTS (SELECT 1 FROM {$dbprefix}private_settings WHERE entity_guid IN ({$table_alias}{$guid_column}, {$table_alias}{$owner_guid_column}) AND name='plugin:user_setting:private_profiles:user_activity_setting' AND value='$value')";
+		$return = $event->getValue();
+		$return['ands'][] = self::buildActivityPrivacyExclusion($qb, $qualified_guid, $qualified_owner_guid);
 
 		return $return;
+	}
+
+	/**
+	 * Namespaced metadata name under which `user_activity_setting` is stored on
+	 * a user entity. Matches `ElggEntity::getNamespacedPluginSettingName('user',
+	 * 'private_profiles', 'user_activity_setting')` (Elgg 4.x+).
+	 */
+	protected const ACTIVITY_SETTING_METADATA_NAME = 'plugin:user_setting:private_profiles:user_activity_setting';
+
+	/**
+	 * Build a parameterized NOT EXISTS clause that excludes entities whose owner
+	 * (or the entity itself, when it is a user) has opted into the members-only
+	 * activity setting.
+	 *
+	 * Returns a SQL fragment safe to append to the outer query's WHERE — all
+	 * dynamic values are bound through the supplied QueryBuilder's parameter bag.
+	 *
+	 * @param QueryBuilder $qb                   Outer query builder (receives bound params)
+	 * @param string       $qualified_guid       Outer-query column expression (e.g. e.guid)
+	 * @param string       $qualified_owner_guid Outer-query column expression (e.g. e.owner_guid)
+	 *
+	 * @return string
+	 */
+	protected static function buildActivityPrivacyExclusion(QueryBuilder $qb, string $qualified_guid, string $qualified_owner_guid): string {
+		$setting_name = self::ACTIVITY_SETTING_METADATA_NAME;
+
+		// Bind the two literal values on the outer query builder so they
+		// participate in the prepared-statement parameter bag when the access
+		// framework executes the final SELECT.
+		$name_param = $qb->param($setting_name, ELGG_VALUE_STRING);
+		$value_param = $qb->param(self::ACCESS_LOGGED_IN, ELGG_VALUE_STRING);
+
+		// Build the subquery purely for its qualified table identifier
+		// (metadata + db prefix) and SELECT shape. The WHERE clause uses the
+		// already-bound parameters from the outer query.
+		$sub = $qb->subquery('metadata', 'pp_md');
+		$sub->select('1');
+
+		// entity_guid matches either the outer entity's guid OR its owner_guid.
+		// Both are controlled column identifiers supplied by the access
+		// framework (not user input).
+		$entity_match = $sub->expr()->or(
+			"pp_md.entity_guid = {$qualified_guid}",
+			"pp_md.entity_guid = {$qualified_owner_guid}"
+		);
+
+		$sub->where($entity_match)
+			->andWhere("pp_md.name = {$name_param}")
+			->andWhere("pp_md.value = {$value_param}");
+
+		return "NOT EXISTS ({$sub->getSQL()})";
 	}
 }
