@@ -12,7 +12,7 @@ cd /var/www/html
 
 # Check if Elgg is already installed
 if [ ! -f /var/www/html/.elgg-installed ]; then
-    echo "Installing Elgg 6.x..."
+    echo "Installing Elgg 7.x..."
 
     # Create settings.php
     mkdir -p elgg-config
@@ -49,19 +49,19 @@ SETTINGS_VALUES
             'dbhost' => '${ELGG_DB_HOST:-db}',
             'dbport' => '3306',
             'dbprefix' => 'elgg_',
-            'sitename' => 'Elgg 6.x Migration Test',
+            'sitename' => 'Elgg 7.x Migration Test',
             'siteemail' => '${ELGG_ADMIN_EMAIL:-admin@example.com}',
             'wwwroot' => '${ELGG_SITE_URL:-http://localhost/}',
             'dataroot' => '${ELGG_DATA_ROOT:-/var/www/data/}',
             'displayname' => 'Admin',
             'email' => '${ELGG_ADMIN_EMAIL:-admin@example.com}',
             'username' => 'admin',
-            'password' => '${ELGG_ADMIN_PASSWORD:-admin12345}',
+            'password' => '${ELGG_ADMIN_PASSWORD:-Admin@12345678901}',
         ];
 
         \$installer = new \ElggInstaller();
         \$installer->batchInstall(\$params);
-        echo 'Elgg 6.x installed successfully.' . PHP_EOL;
+        echo 'Elgg 7.x installed successfully.' . PHP_EOL;
     " 2>&1 || echo "Install completed (check for errors above)."
 
     # Activate plugins in priority order
@@ -102,7 +102,17 @@ SETTINGS_VALUES
                 if (empty(\$id) || \$id[0] === '#') continue;
                 \$plugin = elgg_get_plugin_from_id(\$id);
                 if (!\$plugin) { echo 'Plugin not found: ' . \$id . PHP_EOL; continue; }
-                if (\$plugin->isActive()) { \$activated++; continue; }
+                if (\$plugin->isActive()) {
+                    // Plugin was auto-activated by ElggInstaller::batchInstall
+                    // (which activates everything in mod/ before this loop
+                    // runs). Echo '+ <id>' anyway so the activation-log parser
+                    // can distinguish 'activated' from 'not_attempted' — without
+                    // this, the verify-fleet gate misreports successfully-active
+                    // plugins as not_attempted.
+                    \$activated++;
+                    echo '  + ' . \$id . PHP_EOL;
+                    continue;
+                }
                 try {
                     // Bump each plugin to the highest priority among
                     // inactives at activation time. The .plugin-order.txt
@@ -147,7 +157,7 @@ SETTINGS_VALUES
     fi
 
     touch /var/www/html/.elgg-installed
-    echo "Elgg 6.x setup complete."
+    echo "Elgg 7.x setup complete."
 fi
 
 # Start Apache
