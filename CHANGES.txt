@@ -1,6 +1,20 @@
 Changelog
 =========
 
+5.0.0
+-----
+
+- Updated for Elgg 5.x.
+- Composer constraints: elgg/elgg ~5.1.0, php >=8.1, ext-intl, composer/installers ^2.0.
+- Hooks merged into events: elgg_register_plugin_hook_handler() ->
+  elgg_register_event_handler(); \Elgg\Hook callback type-hints ->
+  \Elgg\Event across Bootstrap, Access, Menus, Router, and lib/hooks.php.
+- Replaced removed REFERER constant with REFERRER.
+- Replaced removed get_user_by_username() with elgg_get_user_by_username().
+- Replaced removed elgg_push_breadcrumb() with elgg_register_menu_item('breadcrumbs', ...).
+- Hardened null-safety in Access::hasAccessToProfile()/canSendPrivateMessage()
+  and the user settings action for PHP 8.1+ strict typing.
+
 4.0.0
 -----
 
