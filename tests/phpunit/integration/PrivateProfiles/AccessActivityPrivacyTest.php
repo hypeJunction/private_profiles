@@ -16,12 +16,21 @@ use Elgg\PrivateProfiles\Access;
  */
 class AccessActivityPrivacyTest extends IntegrationTestCase {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function up() {
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function down() {
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getPluginID(): string {
 		return 'private_profiles';
 	}
@@ -41,6 +50,9 @@ class AccessActivityPrivacyTest extends IntegrationTestCase {
 		return $event;
 	}
 
+	/**
+	 * @return void
+	 */
 	public function testReturnsVoidWhenInActionContext(): void {
 		elgg_push_context('action');
 		try {
@@ -52,6 +64,9 @@ class AccessActivityPrivacyTest extends IntegrationTestCase {
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	public function testReturnsVoidWhenLoggedInViewer(): void {
 		$qb = Select::fromTable('entities', 'e');
 		$event = $this->makeEvent(
@@ -61,6 +76,9 @@ class AccessActivityPrivacyTest extends IntegrationTestCase {
 		$this->assertNull(Access::applyActivityPrivacy($event));
 	}
 
+	/**
+	 * @return void
+	 */
 	public function testReturnsVoidWhenIgnoreAccess(): void {
 		$qb = Select::fromTable('entities', 'e');
 		$event = $this->makeEvent(
@@ -70,12 +88,18 @@ class AccessActivityPrivacyTest extends IntegrationTestCase {
 		$this->assertNull(Access::applyActivityPrivacy($event));
 	}
 
+	/**
+	 * @return void
+	 */
 	public function testReturnsVoidWhenNoQueryBuilderInPayload(): void {
 		// Defensive: pre-6.x event shape (no query_builder param)
 		$event = $this->makeEvent(['table_alias' => 'e'], ['ands' => [], 'ors' => []]);
 		$this->assertNull(Access::applyActivityPrivacy($event));
 	}
 
+	/**
+	 * @return void
+	 */
 	public function testAddsParameterizedNotExistsClause(): void {
 		$qb = Select::fromTable('entities', 'e');
 
@@ -112,6 +136,9 @@ class AccessActivityPrivacyTest extends IntegrationTestCase {
 		$this->assertContains('members', $values);
 	}
 
+	/**
+	 * @return void
+	 */
 	public function testWorksWithoutTableAlias(): void {
 		$qb = Select::fromTable('entities');
 

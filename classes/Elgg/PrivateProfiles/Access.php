@@ -174,7 +174,15 @@ class Access {
 	 */
 	public static function interceptPrivateMessage(\Elgg\Event $event) {
 
-		$recipients = get_input('recipients');
+		// 7.x: core messages plugin renamed the form/action parameter
+		// from `recipients` (array) to `recipient` (singular). Accept the
+		// 7.x shape first, then fall back so the handler is robust against
+		// callers that still post the legacy array.
+		$recipient_input = get_input('recipient');
+		if ($recipient_input === null || $recipient_input === '') {
+			$recipient_input = get_input('recipients');
+		}
+
 		$original_msg_guid = (int) get_input('original_guid');
 
 		if ($original_msg_guid) {
@@ -182,13 +190,15 @@ class Access {
 			return;
 		}
 
-		if (!is_array($recipients)) {
+		$guids = is_array($recipient_input) ? $recipient_input : [$recipient_input];
+		$guids = array_filter(array_map('intval', $guids));
+		if (empty($guids)) {
 			return;
 		}
 
 		$error = false;
-		foreach ($recipients as $guid) {
-			$recipient = get_user((int) $guid);
+		foreach ($guids as $guid) {
+			$recipient = get_user($guid);
 			if (!$recipient) {
 				continue;
 			}
