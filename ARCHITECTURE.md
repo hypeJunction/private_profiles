@@ -1,4 +1,4 @@
-# private_profiles — Architecture (Elgg 6.x)
+# private_profiles — Architecture (Elgg 7.x)
 
 ## Summary
 
@@ -16,8 +16,8 @@ operates entirely via event handlers on existing entity / access / menu APIs.
 ```
 private_profiles/
 ├── elgg-plugin.php              # routes, actions, default settings, Bootstrap binding
-├── composer.json                # elgg/elgg ~6.1.0, php >=8.2, ext-intl, composer/installers ^2.0
-├── docker/                      # elgg6 dev/CI stack (PHP 8.2, MySQL 8.0)
+├── composer.json                # elgg/elgg ~7.0.0, php >=8.3, ext-intl, composer/installers ^2.0
+├── docker/                      # elgg7 dev/CI stack (PHP 8.3, MySQL 8.0)
 ├── classes/
 │   ├── PrivateProfilesBootstrap.php           # boot() + init() event registrations
 │   └── Elgg/PrivateProfiles/
@@ -42,8 +42,9 @@ private_profiles/
 
 ## Registered events (all via Bootstrap)
 
-In Elgg 6.x hooks and events are unified — all callbacks below are registered
-via `elgg_register_event_handler()` and receive `\Elgg\Event`.
+In Elgg 7.x (same shape as 5.x/6.x) hooks and events are unified — all
+callbacks below are registered via `elgg_register_event_handler()` and
+receive `\Elgg\Event`.
 
 | Event | Type | Handler | Notes |
 |-------|------|---------|-------|
@@ -91,10 +92,11 @@ under the namespaced name
 
 ## Dependencies
 
-- `elgg/elgg` `~6.1.0`
-- `php` `>=8.2`
+- `elgg/elgg` `~7.0.0`
+- `php` `>=8.3`
 - `ext-intl`
 - `composer/installers` `^2.0`
+- Composer stability for 7.x: `minimum-stability: dev`, `prefer-stable: true`, plus the `asset-packagist.org` composer repository (per rule 023-composer-stability)
 - Suggests: `messages` (the messaging event handlers are only meaningful when the messages plugin is active)
 
 ## Seeding
@@ -103,6 +105,41 @@ No seeder shipped — the plugin owns no entity types/subtypes/relationships
 and persists only per-user plugin settings. No seeder is required (no
 visible gap in seeded fleets). Documented exception per the elgg-migrate
 acceptance gate.
+
+## Migration notes (6.x → 7.x)
+
+- `composer.json`: `elgg/elgg` bumped to `~7.0.0`, `php` floor raised to
+  `>=8.3`. Added `minimum-stability: dev`, `prefer-stable: true`, and the
+  `https://asset-packagist.org` composer repository — these are mandatory
+  on every Elgg 7.x plugin (rule 023-composer-stability) so dev-tagged
+  Elgg dependencies (e.g. CKEditor frontend asset packages) resolve.
+- `docker/`: regenerated from the canonical
+  `skills/elgg-migrate/infra/elgg7` template — PHP 8.3, MySQL 8.0, Elgg
+  7.x, PHPUnit `^10.5 || ^11.0`. Ports moved to 8700 / 13700 to avoid
+  colliding with the 6.x stack on the same host.
+- `Access::interceptPrivateMessage()` now reads the singular
+  `recipient` action input first, falling back to the legacy
+  `recipients` array if absent — rule 013-messages-parameter-rename.
+  The Elgg 7.x core messages plugin renamed the `messages/send` form
+  field; the validator coerces either shape into a list of integer
+  guids before checking `canSendPrivateMessage()` for each, so no
+  existing caller is broken.
+- The 6.x → 7.x AST + LLM-guided manifest (26 rules) reported zero
+  in-scope matches for everything else: no `ElggObject` direct
+  instantiation, no CSS Crush, no Redis/Memcached, no Laminas mailer,
+  no notification handler references, no renamed forms/routes/actions,
+  no `elgg-button-special` / `elgg-button-action-done`, no
+  `elgg_reset_system_cache()`, no `flush_cache`, no external-pages
+  surface, no webservices, no river capability, no PHPUnit attribute
+  migration needed (the existing integration test already uses class
+  methods only). The migration is essentially the composer +
+  messages-parameter delta.
+- Test coverage retained: same 6 tests / 48 assertions as on 6.x; PHPUnit
+  runs green inside the elgg7 docker stack.
+- Gate results (verify-fleet --version=elgg7 --phpunit, project
+  em-private_profiles-3f3af01): PHP syntax PASS · homepage 14296 bytes
+  PASS · login 14394 bytes PASS · zero PHP Fatal/Error in error.log PASS
+  · PHP_CodeSniffer (Elgg) PASS · PHPUnit 6 tests / 48 assertions PASS.
 
 ## Migration notes (5.x → 6.x)
 

@@ -1,6 +1,6 @@
 # private_profiles
 
-![Elgg 6.x](https://img.shields.io/badge/Elgg-6.x-orange.svg?style=flat-square)
+![Elgg 7.x](https://img.shields.io/badge/Elgg-7.x-orange.svg?style=flat-square)
 
 Restrict profile visibility and private-message permissions site-wide or per user, and let users hide their activity from logged-out visitors.
 
@@ -27,7 +27,8 @@ Download the zip, extract into your Elgg `mod/` directory, and activate in the a
 
 | Plugin version | Elgg version |
 |---|---|
-| current | 6.x |
+| current | 7.x |
+| 6.x | 6.x |
 | 5.x | 5.x |
 | 4.x | 4.x |
 | 3.x | 3.x |

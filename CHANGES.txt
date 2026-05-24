@@ -1,6 +1,22 @@
 Changelog
 =========
 
+7.0.0
+-----
+
+- Updated for Elgg 7.x.
+- Composer constraints: elgg/elgg ~7.0.0, php >=8.3. Added the 7.x-required
+  minimum-stability: dev / prefer-stable: true / asset-packagist composer
+  repository entries.
+- Docker stack regenerated from the canonical elgg7 infra template
+  (PHP 8.3, MySQL 8.0, PHPUnit ^10.5 || ^11.0).
+- Access::interceptPrivateMessage() now reads the singular `recipient`
+  action input first and falls back to the legacy `recipients` array,
+  matching the parameter rename in the Elgg 7.x core messages plugin.
+- Gate results: PHP syntax PASS, homepage/login renders PASS,
+  PHP_CodeSniffer (Elgg) PASS, PHPUnit 6 tests / 48 assertions PASS,
+  no PHP Fatal/Error in error.log.
+
 6.0.0
 -----
 
