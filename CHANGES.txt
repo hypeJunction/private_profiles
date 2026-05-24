@@ -1,6 +1,23 @@
 Changelog
 =========
 
+6.0.0
+-----
+
+- Updated for Elgg 6.x.
+- Composer constraints: elgg/elgg ~6.1.0, php >=8.2.
+- Refactored Access::applyActivityPrivacy() to build its NOT EXISTS clause via
+  Elgg's QueryBuilder (Elgg\Database\QueryBuilder::subquery() +
+  ComparisonClause). Eliminates the raw `elgg_get_config('dbprefix')` string
+  interpolation that was the last documented piece of security debt carried
+  forward from the 4.x→5.x step. The clause now targets the metadata table
+  (the private_settings table is gone in 6.x — and was already gone in 5.x;
+  the previous SQL was silently a no-op).
+- Added integration tests (tests/phpunit/integration/PrivateProfiles/
+  AccessActivityPrivacyTest.php) covering the parameterized clause shape,
+  outer-query parameter binding, and the early-return guards.
+- Added Docker infra under docker/ targeting Elgg 6.x (PHP 8.2, MySQL 8.0).
+
 5.0.0
 -----
 
