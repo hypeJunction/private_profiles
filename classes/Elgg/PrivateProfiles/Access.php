@@ -29,7 +29,7 @@ class Access {
 			$is_admin = $user->isAdmin();
 		}
 
-		return ($is_admin || elgg_get_ignore_access());
+		return ($is_admin || \elgg_get_ignore_access());
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Access {
 	 */
 	public static function hasAccessToProfile(ElggUser $user, ElggUser $viewer = null) {
 		if (!isset($viewer)) {
-			$viewer = elgg_get_logged_in_user_entity();
+			$viewer = \elgg_get_logged_in_user_entity();
 		}
 
 		if (self::privateprofiles_check_access_overrides($viewer->guid)) {
@@ -79,15 +79,15 @@ class Access {
 	 */
 	public static function getAccessSetting(ElggUser $user) {
 
-		$access_setting = elgg_get_plugin_setting('default_access_setting', 'private_profiles', self::ACCESS_PRIVATE);
+		$access_setting = \elgg_get_plugin_setting('default_access_setting', 'private_profiles', self::ACCESS_PRIVATE);
 
-		$custom_access_setting = elgg_get_plugin_setting('custom_access_setting', 'private_profiles', 'yes');
+		$custom_access_setting = \elgg_get_plugin_setting('custom_access_setting', 'private_profiles', 'yes');
 		if ($custom_access_setting != 'yes') {
 			// Users are not allowed to customize their own settings
 			return $access_setting;
 		}
 
-		$user_access_setting = elgg_get_plugin_user_setting('user_access_setting', $user->guid, 'private_profiles');
+		$user_access_setting = \elgg_get_plugin_user_setting('user_access_setting', $user->guid, 'private_profiles');
 		if ($user_access_setting) {
 			$access_setting = $user_access_setting;
 		}
@@ -105,7 +105,7 @@ class Access {
 	 */
 	public static function canSendPrivateMessage(ElggUser $recipient, ElggUser $sender = null) {
 		if (!isset($sender)) {
-			$sender = elgg_get_logged_in_user_entity();
+			$sender = \elgg_get_logged_in_user_entity();
 		}
 
 		if (!$sender) {
@@ -145,15 +145,15 @@ class Access {
 	 */
 	public static function getMessagesSetting(ElggUser $user) {
 
-		$message_setting = elgg_get_plugin_setting('default_messages_setting', 'private_profiles', self::ACCESS_PRIVATE);
+		$message_setting = \elgg_get_plugin_setting('default_messages_setting', 'private_profiles', self::ACCESS_PRIVATE);
 
-		$custom_setting = elgg_get_plugin_setting('custom_access_setting', 'private_profiles', 'yes');
+		$custom_setting = \elgg_get_plugin_setting('custom_access_setting', 'private_profiles', 'yes');
 		if ($custom_setting != 'yes') {
 			// Users are not allowed to customize their own settings
 			return $message_setting;
 		}
 
-		$user_message_setting = elgg_get_plugin_user_setting('user_messages_setting', $user->guid, 'private_profiles');
+		$user_message_setting = \elgg_get_plugin_user_setting('user_messages_setting', $user->guid, 'private_profiles');
 		if ($user_message_setting) {
 			$message_setting = $user_message_setting;
 		}
@@ -193,7 +193,7 @@ class Access {
 		}
 
 		if ($error) {
-			throw new \Elgg\Exceptions\Http\ValidationException(elgg_echo('private_profiles:sending_denied'));
+			throw new \Elgg\Exceptions\Http\ValidationException(\elgg_echo('private_profiles:sending_denied'));
 		}
 
 		return;
@@ -208,7 +208,7 @@ class Access {
 	 */
 	public static function applyActivityPrivacy(\Elgg\Hook $hook) {
 
-		if (elgg_in_context('action')) {
+		if (\elgg_in_context('action')) {
 			// let actions such as /login run without hinderance
 			return;
 		}
@@ -223,7 +223,7 @@ class Access {
 			return;
 		}
 
-		$dbprefix = elgg_get_config('dbprefix');
+		$dbprefix = \elgg_get_config('dbprefix');
 		$table_alias = $hook->getParam('table_alias') ? $hook->getParam('table_alias') . '.' : '';
 
 		$guid_column = $hook->getParam('guid_column', 'guid');
