@@ -20,20 +20,20 @@ class Router {
 			return;
 		}
 
-		$segments = (array) elgg_extract('segments', $return, []);
+		$segments = (array) \elgg_extract('segments', $return, []);
 
 		$username = array_shift($segments);
-		$user = elgg_get_user_by_username((string) $username);
+		$user = \elgg_get_user_by_username((string) $username);
 
 		if (!$user) {
-			register_error(elgg_echo('private_profiles:invalid_username'));
-			header('Location: ' . elgg_normalize_url(REFERRER), true, 302);
+			register_error(\elgg_echo('private_profiles:invalid_username'));
+			header('Location: ' . \elgg_normalize_url(REFERRER), true, 302);
 			exit;
 		}
 
 		if (!Access::hasAccessToProfile($user)) {
-			register_error(elgg_echo('private_profiles:access_denied'));
-			header('Location: ' . elgg_normalize_url(REFERRER), true, 302);
+			register_error(\elgg_echo('private_profiles:access_denied'));
+			header('Location: ' . \elgg_normalize_url(REFERRER), true, 302);
 			exit;
 		}
 	}
@@ -51,8 +51,8 @@ class Router {
 			return;
 		}
 
-		$identifier = elgg_extract('identifier', $return);
-		$segments = (array) elgg_extract('segments', $return, []);
+		$identifier = \elgg_extract('identifier', $return);
+		$segments = (array) \elgg_extract('segments', $return, []);
 
 		$page = array_shift($segments);
 		$username = array_shift($segments);
@@ -79,7 +79,7 @@ class Router {
 		$page = array_shift($segments);
 		$username = array_shift($segments);
 
-		echo elgg_view_resource("private_profiles/$page", [
+		echo \elgg_view_resource("private_profiles/$page", [
 			'username' => $username,
 		]);
 		

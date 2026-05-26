@@ -42,13 +42,13 @@ class AccessActivityPrivacyTest extends IntegrationTestCase {
 	}
 
 	public function testReturnsVoidWhenInActionContext(): void {
-		elgg_push_context('action');
+		\elgg_push_context('action');
 		try {
 			$qb = Select::fromTable('entities', 'e');
 			$event = $this->makeEvent(['query_builder' => $qb, 'table_alias' => 'e'], ['ands' => [], 'ors' => []]);
 			$this->assertNull(Access::applyActivityPrivacy($event));
 		} finally {
-			elgg_pop_context();
+			\elgg_pop_context();
 		}
 	}
 
