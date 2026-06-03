@@ -26,13 +26,13 @@ class Router {
 		$user = \elgg_get_user_by_username((string) $username);
 
 		if (!$user) {
-			register_error(\elgg_echo('private_profiles:invalid_username'));
+			elgg_register_error_message(\elgg_echo('private_profiles:invalid_username'));
 			header('Location: ' . \elgg_normalize_url(REFERRER), true, 302);
 			exit;
 		}
 
 		if (!Access::hasAccessToProfile($user)) {
-			register_error(\elgg_echo('private_profiles:access_denied'));
+			elgg_register_error_message(\elgg_echo('private_profiles:access_denied'));
 			header('Location: ' . \elgg_normalize_url(REFERRER), true, 302);
 			exit;
 		}
